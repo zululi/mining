@@ -120,7 +120,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-
+                                score.set(uuid,5)
                                 score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
                                 player.sendMessage("$uuid :" + (score[uuid]))
 
