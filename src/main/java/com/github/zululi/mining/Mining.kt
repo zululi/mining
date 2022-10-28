@@ -1,6 +1,8 @@
 package com.github.zululi.mining
 
+import com.github.zululi.mining.Mining.vals.min
 import com.github.zululi.mining.Mining.vals.score
+import com.github.zululi.mining.Mining.vals.sec
 import com.github.zululi.mining.listener.listener
 import org.bukkit.*
 import org.bukkit.attribute.Attribute
@@ -13,7 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.Team
-import java.util.concurrent.TimeUnit
+import java.util.*
 
 
 class Mining : JavaPlugin() , CommandExecutor {
@@ -21,15 +23,20 @@ class Mining : JavaPlugin() , CommandExecutor {
         var redscore = 0
         var bluescore = 0
         var gamestart = 0
-        var score: Map<String, Int> = HashMap()
+        var score: Map<String, Int> = mutableMapOf()
+        var ranking: MutableMap<UUID, Long> = mutableMapOf()
+        var min = 15
+        var sec = 0
     }
-    var redscore = Mining.vals.redscore
-    var bluescore = Mining.vals.bluescore
+
+    var redscore = vals.redscore
+    var bluescore = vals.bluescore
     var gamestart = vals.gamestart
 
     var startsec = -1
     var x = -5
     var z = -6
+
 
     private val board = Bukkit.getScoreboardManager()?.mainScoreboard
     private var red = board?.registerNewTeam("red")
@@ -64,13 +71,8 @@ class Mining : JavaPlugin() , CommandExecutor {
                 for (player in Bukkit.getOnlinePlayers()) {
                     player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = 40.0
                     player.getAttribute(Attribute.GENERIC_ATTACK_SPEED)?.baseValue = 99999.0
-                    player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE)?.baseValue = 0.75
-                    Bukkit.broadcastMessage(startsec.toString())
+
                 }
-
-
-
-
 
 
                 //
@@ -86,6 +88,9 @@ class Mining : JavaPlugin() , CommandExecutor {
                         )
                         pscoreboard?.displaySlot = DisplaySlot.SIDEBAR
                         pscoreboard?.getScore(ChatColor.GOLD.toString() + "サーバー人数: " + allplayer)?.score = 0
+                        for (player in Bukkit.getOnlinePlayers()) {
+                            player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE)?.baseValue = -5.0
+                        }
 
 
 
@@ -93,13 +98,12 @@ class Mining : JavaPlugin() , CommandExecutor {
 
                             if (startsec > 0) {
 
-                                    Bukkit.broadcastMessage("${ChatColor.GOLD}試合開始まで${ChatColor.RED}" + startsec + "${ChatColor.GOLD}秒")
-                                    for (all in Bukkit.getOnlinePlayers()) {
-                                        all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.25f, 1f)
-                                    }
+                                Bukkit.broadcastMessage("${ChatColor.GOLD}試合開始まで${ChatColor.RED}" + startsec + "${ChatColor.GOLD}秒")
+                                for (all in Bukkit.getOnlinePlayers()) {
+                                    all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.25f, 1f)
+                                }
 
                                 startsec--
-
 
 
                             } else if (startsec == 0) {
@@ -116,12 +120,13 @@ class Mining : JavaPlugin() , CommandExecutor {
                                     all.inventory.setItem(4, ItemStack(Material.BREAD, 10))
                                     all.gameMode = GameMode.SURVIVAL
                                     score = mutableMapOf(all.name to 0)
+                                    min = 0
+                                    sec = 10
                                 }
                                 gamestart = 1
                                 vals.gamestart = gamestart
 
                                 gametick()
-
 
 
                             }
@@ -130,10 +135,20 @@ class Mining : JavaPlugin() , CommandExecutor {
                     }
 
                     1 -> {
-
+                        sec--
+                        if (sec < 0 && min > 0) {
+                            sec = 59
+                            min--
+                        } else if (sec == 0 && min == 0) {
+                            finish()
+                        }
                         for (player in Bukkit.getOnlinePlayers()) {
                             val team: Team? = Bukkit.getScoreboardManager()?.mainScoreboard?.getEntryTeam(player.name)
                             val tscoreboard = Bukkit.getScoreboardManager()?.mainScoreboard
+
+
+                            player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE)?.baseValue = 0.75
+
                             if (team == null) {
                                 if (tscoreboard?.getTeam("blue")?.size!! >= tscoreboard.getTeam("red")?.size!!) {
                                     red?.addEntry(player.name)
@@ -148,7 +163,8 @@ class Mining : JavaPlugin() , CommandExecutor {
             }
         }.runTaskTimer(this, 0, 20)
     }
-    fun gametick(){
+
+    fun gametick() {
         object : BukkitRunnable() {
             override fun run() {
                 Bukkit.getScoreboardManager()?.mainScoreboard?.getObjective("main")?.unregister()
@@ -158,6 +174,7 @@ class Mining : JavaPlugin() , CommandExecutor {
                     "${ChatColor.GOLD}Mining Battle"
                 )
                 mscoreboard?.displaySlot = DisplaySlot.SIDEBAR
+                mscoreboard?.getScore("$min : $sec")?.score = 15
                 mscoreboard?.getScore("")?.score = 14
                 mscoreboard?.getScore(ChatColor.GOLD.toString() + "${ChatColor.RED}Red : " + redscore)?.score =
                     13
@@ -165,13 +182,11 @@ class Mining : JavaPlugin() , CommandExecutor {
                     12
                 mscoreboard?.getScore("")?.score =
                     11
-                redscore = Mining.vals.redscore
-                bluescore = Mining.vals.bluescore
+                redscore = vals.redscore
+                bluescore = vals.bluescore
             }
         }.runTaskTimer(this, 0, 1)
     }
-
-
 
 
     override fun onEnable() {
@@ -215,7 +230,6 @@ class Mining : JavaPlugin() , CommandExecutor {
     }
 
 
-
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         when (command.name) {
             "start" -> {
@@ -237,31 +251,58 @@ class Mining : JavaPlugin() , CommandExecutor {
                 }
 
             }
-            "team-red-warifuri" ->{
+
+            "team-red-warifuri" -> {
                 if (args.isEmpty()) {
                     sender.sendMessage("${ChatColor.RED}プレイヤーを入力してください")
-                }else {
+                } else {
                     val player = args[0]
                     red?.addEntry(player)
                     sender.sendMessage("${args[0]}を赤チームにしました")
                 }
             }
-            "team-blue-warifuri" ->{
+
+            "team-blue-warifuri" -> {
                 if (args.isEmpty()) {
                     sender.sendMessage("${ChatColor.RED}プレイヤーを入力してください")
-                }else {
+                } else {
                     val player = args[0]
                     blue?.addEntry(player)
                     sender.sendMessage("${args[0]}を青チームにしました")
                 }
             }
-            "team-empty"->{
 
-                    removeentry()
-                    sender.sendMessage("${ChatColor.GREEN}全員をチームから外しました。")
+            "team-empty" -> {
+
+                removeentry()
+                sender.sendMessage("${ChatColor.GREEN}全員をチームから外しました。")
 
             }
 
+            "quick-start" -> {
+                Bukkit.broadcastMessage("${ChatColor.GOLD}試合開始")
+                for (all in Bukkit.getOnlinePlayers()) {
+                    all.playSound(all.location, Sound.ENTITY_WITHER_SPAWN, 1f, 1f)
+                    all.teleport(Location(all.location.world, 0.0, 150.0, 0.0))
+                    val helmet = ItemStack(Material.ELYTRA)
+                    all.inventory.chestplate = helmet
+                    all.inventory.setItem(0, ItemStack(Material.WOODEN_SWORD, 1))
+                    all.inventory.setItem(1, ItemStack(Material.WOODEN_PICKAXE, 1))
+                    all.inventory.setItem(2, ItemStack(Material.WOODEN_AXE, 1))
+                    all.inventory.setItem(3, ItemStack(Material.WOODEN_SHOVEL, 1))
+                    all.inventory.setItem(4, ItemStack(Material.BREAD, 10))
+                    all.gameMode = GameMode.SURVIVAL
+                    score = mutableMapOf(all.name to 0)
+                    min = 0
+                    sec = 10
+                }
+                gamestart = 1
+                vals.gamestart = gamestart
+
+                gametick()
+
+
+            }
         }
         return false
     }
@@ -284,25 +325,50 @@ class Mining : JavaPlugin() , CommandExecutor {
 
             val teams = tscoreboard?.getPlayerTeam(all)
             if (teams != null) {
-                if (teams.equals(tscoreboard.getTeam("red"))) {
-                    val redplayer = teams.name
+                if (teams == tscoreboard.getTeam("red")) {
                     all.sendMessage("${ChatColor.RED}レッド${ChatColor.YELLOW}になりました。")
-                } else if (teams.equals(tscoreboard.getTeam("blue"))) {
+                } else if (teams == tscoreboard.getTeam("blue")) {
                     all.sendMessage("${ChatColor.BLUE}ブルー${ChatColor.YELLOW}になりました。")
                 } else {
                     Bukkit.broadcastMessage("ccccc")
                 }
-            }else{
-            Bukkit.broadcastMessage("")
-        }
+            } else {
+                Bukkit.broadcastMessage("")
+            }
 
         }
 
 
     }
 
+    fun finish() {
+        Bukkit.broadcastMessage("${ChatColor.GOLD}試合終了")
+        val ranking: MutableMap<Int?, String> = TreeMap { m: Int?, n: Int? ->
+            m!!.compareTo(
+                n!!
+            ) * -1
+        }
+
+        for (name in score.keys) {
+            ranking[score[name]] = name
+            Bukkit.broadcastMessage("name: $name")
+            Bukkit.broadcastMessage("ranking score name :"+ ranking[score[name]])
+        }
+        for (player in Bukkit.getOnlinePlayers()) {
+            var i = 1
+            for (nKey in ranking.keys) {
+                Bukkit.broadcastMessage("nkey: $nKey")
+                player.sendMessage(ChatColor.YELLOW.toString() + i + ". " + ChatColor.AQUA + ranking[nKey] + ChatColor.WHITE + "(" + nKey + ")")
+                i += 1
+            }
+        }
 
 
+
+        gamestart = 2
+
+
+    }
 
 
     private fun removeentry() {
@@ -313,8 +379,7 @@ class Mining : JavaPlugin() , CommandExecutor {
                 Bukkit.getConsoleSender().sendMessage("1")
                 if (scoreboard?.getEntryTeam(player.name) != null) {
                     scoreboard.getEntryTeam("red")?.removeEntry(player.name)
-                    red?.removeEntry(player.name)
-                    blue?.removeEntry(player.name)
+                    scoreboard.getEntryTeam("blue")?.removeEntry(player.name)
 
                 }
             } else {

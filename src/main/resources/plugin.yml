@@ -19,3 +19,6 @@ commands:
 
   team-empty:
     description: team empty
+
+  quick-start:
+      description: quick start
