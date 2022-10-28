@@ -98,7 +98,7 @@ object listener : Listener {
         bluescore = Mining.vals.bluescore
         gamestart = gamestart
         val player = event.player
-        val uuid = event.player.name
+        val uuid = player.uniqueId
         val block = event.block.type
         when (gamestart) {
             0 -> {
@@ -120,8 +120,8 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score.set(uuid,5)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
+                                //score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("$uuid :" + (score[uuid]))
 
 
@@ -135,7 +135,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -147,7 +147,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -159,7 +159,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -171,7 +171,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -183,7 +183,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -195,7 +195,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -207,7 +207,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -219,7 +219,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -231,7 +231,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -243,7 +243,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -255,7 +255,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -267,7 +267,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -279,7 +279,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -291,7 +291,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -303,7 +303,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -320,7 +320,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
 
                             }
@@ -333,7 +333,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -345,7 +345,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -357,7 +357,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -369,7 +369,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -381,7 +381,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -393,7 +393,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -405,7 +405,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -417,7 +417,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -429,7 +429,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -441,7 +441,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -453,7 +453,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -465,7 +465,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -477,7 +477,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -489,7 +489,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
                             }
 
@@ -501,7 +501,7 @@ object listener : Listener {
                                 component.text = "$block を採掘しました。(+$addpoint points)"
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component)
                                 player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                score = mutableMapOf(uuid to (score[uuid]?.plus(addpoint) ?: 0))
+                                score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
                                 player.sendMessage("" + (score[uuid]))
 
 
@@ -517,7 +517,7 @@ object listener : Listener {
             }
         }
         for (name in score.keys) {
-            Bukkit.broadcastMessage(name)
+            Bukkit.broadcastMessage(name.toString())
         }
         Mining.vals.redscore = redscore
         Mining.vals.bluescore = bluescore

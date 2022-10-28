@@ -23,7 +23,7 @@ class Mining : JavaPlugin() , CommandExecutor {
         var redscore = 0
         var bluescore = 0
         var gamestart = 0
-        var score: Map<String, Int> = mutableMapOf()
+        var score= mutableMapOf<UUID,Int>()
         var ranking: MutableMap<UUID, Long> = mutableMapOf()
         var min = 15
         var sec = 0
@@ -32,7 +32,7 @@ class Mining : JavaPlugin() , CommandExecutor {
     var redscore = vals.redscore
     var bluescore = vals.bluescore
     var gamestart = vals.gamestart
-
+    private var playername = "a"
     var startsec = -1
     var x = -5
     var z = -6
@@ -119,7 +119,7 @@ class Mining : JavaPlugin() , CommandExecutor {
                                     all.inventory.setItem(3, ItemStack(Material.WOODEN_SHOVEL, 1))
                                     all.inventory.setItem(4, ItemStack(Material.BREAD, 10))
                                     all.gameMode = GameMode.SURVIVAL
-                                    score = mutableMapOf(all.name to 0)
+                                    score = mutableMapOf(all.uniqueId to 0)
                                     min = 0
                                     sec = 10
                                 }
@@ -292,7 +292,7 @@ class Mining : JavaPlugin() , CommandExecutor {
                     all.inventory.setItem(3, ItemStack(Material.WOODEN_SHOVEL, 1))
                     all.inventory.setItem(4, ItemStack(Material.BREAD, 10))
                     all.gameMode = GameMode.SURVIVAL
-                    score = mutableMapOf(all.name to 0)
+                    score = mutableMapOf(all.uniqueId to 0)
                     min = 0
                     sec = 10
                 }
@@ -350,15 +350,23 @@ class Mining : JavaPlugin() , CommandExecutor {
         }
 
         for (name in score.keys) {
-            ranking[score[name]] = name
+            ranking[score[name]] = name.toString()
             Bukkit.broadcastMessage("name: $name")
             Bukkit.broadcastMessage("ranking score name :"+ ranking[score[name]])
+            playername = Bukkit.getPlayer(name)?.name.toString()
+            Bukkit.broadcastMessage("a   $playername")
         }
         for (player in Bukkit.getOnlinePlayers()) {
             var i = 1
             for (nKey in ranking.keys) {
+                Bukkit.broadcastMessage("ranking nkey: " +ranking.keys)
                 Bukkit.broadcastMessage("nkey: $nKey")
-                player.sendMessage(ChatColor.YELLOW.toString() + i + ". " + ChatColor.AQUA + ranking[nKey] + ChatColor.WHITE + "(" + nKey + ")")
+                val playername1 = Bukkit.getPlayer(ranking[nKey].toString())?.name
+                val playername2 = Bukkit.getPlayer(playername1.toString())
+                Bukkit.broadcastMessage("${ChatColor.GREEN}"+ranking[nKey].toString())
+                Bukkit.broadcastMessage("${ChatColor.GOLD}"+playername1)
+                Bukkit.broadcastMessage("${ChatColor.RED}"+playername2?.name)
+               player.sendMessage(ChatColor.YELLOW.toString() + i + ". " + ChatColor.AQUA + playername1 + playername + ChatColor.WHITE + "(" + nKey + ")")
                 i += 1
             }
         }
