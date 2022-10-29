@@ -3,6 +3,8 @@ package com.github.zululi.mining
 import com.github.zululi.mining.Mining.vals.min
 import com.github.zululi.mining.Mining.vals.score
 import com.github.zululi.mining.Mining.vals.sec
+import com.github.zululi.mining.Mining.vals.truedamage
+import com.github.zululi.mining.Mining.vals.pointdouble
 import com.github.zululi.mining.listener.listener
 import org.bukkit.*
 import org.bukkit.attribute.Attribute
@@ -10,7 +12,10 @@ import org.bukkit.block.Block
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
+import org.bukkit.enchantments.Enchantment
+import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scoreboard.DisplaySlot
@@ -27,12 +32,13 @@ class Mining : JavaPlugin() , CommandExecutor {
         var ranking: MutableMap<UUID, Long> = mutableMapOf()
         var min = 15
         var sec = 0
+        var truedamage = true
+        var pointdouble = false
     }
 
     var redscore = vals.redscore
     var bluescore = vals.bluescore
     var gamestart = vals.gamestart
-    private var playername = "a"
     var startsec = -1
     var x = -5
     var z = -6
@@ -43,26 +49,26 @@ class Mining : JavaPlugin() , CommandExecutor {
     private var blue = board?.registerNewTeam("blue")
 
 
-    private fun prepare() {
-        object : BukkitRunnable() {
-            override fun run() {
-                if (x in -5..5 && z in -6..5) {
-                    if (x in -5..4 && z == 5) {
-                        x++
-                        z = -6
-                    }
-                    z++
-                } else {
-                    this.cancel()
-                }
-                Bukkit.getConsoleSender().sendMessage("x: $x z:$z")
-                val world = Bukkit.getWorld("world")
-                val b: Block = world!!.getBlockAt(x, 149, z)
-                val block = Material.getMaterial("WHITE_STAINED_GLASS")!!.createBlockData()
-                b.blockData = block
-            }
-        }.runTaskTimer(this, 0, 0)
-    }
+   // private fun prepare() {
+      //  object : BukkitRunnable() {
+        //    override fun run() {
+          //      if (x in -5..5 && z in -6..5) {
+           //         if (x in -5..4 && z == 5) {
+            //            x++
+            //            z = -6
+          //          }
+          //          z++
+          //      } else {
+          //          this.cancel()
+          //      }
+          //      Bukkit.getConsoleSender().sendMessage("x: $x z:$z")
+         //       val world = Bukkit.getWorld("world")
+         //       val b: Block = world!!.getBlockAt(x, 149, z)
+       //         val block = Material.getMaterial("WHITE_STAINED_GLASS")!!.createBlockData()
+       //         b.blockData = block
+      //      }
+    //    }.runTaskTimer(this, 0, 0)
+   // }
 
     private fun tick() {
         object : BukkitRunnable() {
@@ -71,6 +77,10 @@ class Mining : JavaPlugin() , CommandExecutor {
                 for (player in Bukkit.getOnlinePlayers()) {
                     player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = 40.0
                     player.getAttribute(Attribute.GENERIC_ATTACK_SPEED)?.baseValue = 99999.0
+                    val world: World = player.world
+                    world.setSpawnLocation(0,400,0)
+
+
 
                 }
 
@@ -100,7 +110,7 @@ class Mining : JavaPlugin() , CommandExecutor {
 
                                 Bukkit.broadcastMessage("${ChatColor.GOLD}試合開始まで${ChatColor.RED}" + startsec + "${ChatColor.GOLD}秒")
                                 for (all in Bukkit.getOnlinePlayers()) {
-                                    all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.25f, 1f)
+                                    all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.1f, 1f)
                                 }
 
                                 startsec--
@@ -110,9 +120,20 @@ class Mining : JavaPlugin() , CommandExecutor {
                                 Bukkit.broadcastMessage("${ChatColor.GOLD}試合開始")
                                 for (all in Bukkit.getOnlinePlayers()) {
                                     all.playSound(all.location, Sound.ENTITY_WITHER_SPAWN, 1f, 1f)
-                                    all.teleport(Location(all.location.world, 0.0, 150.0, 0.0))
+                                    all.teleport(Location(all.location.world, 0.0, 256.0, 0.0))
+
+
                                     val helmet = ItemStack(Material.ELYTRA)
+                                    val metadata = helmet.itemMeta
+                                    metadata?.isUnbreakable = true
+                                    helmet.itemMeta = metadata
                                     all.inventory.chestplate = helmet
+
+
+
+
+
+
                                     all.inventory.setItem(0, ItemStack(Material.WOODEN_SWORD, 1))
                                     all.inventory.setItem(1, ItemStack(Material.WOODEN_PICKAXE, 1))
                                     all.inventory.setItem(2, ItemStack(Material.WOODEN_AXE, 1))
@@ -120,8 +141,8 @@ class Mining : JavaPlugin() , CommandExecutor {
                                     all.inventory.setItem(4, ItemStack(Material.BREAD, 10))
                                     all.gameMode = GameMode.SURVIVAL
                                     score = mutableMapOf(all.uniqueId to 0)
-                                    min = 0
-                                    sec = 10
+                                    min = 15
+                                    sec = 0
                                 }
                                 gamestart = 1
                                 vals.gamestart = gamestart
@@ -135,12 +156,77 @@ class Mining : JavaPlugin() , CommandExecutor {
                     }
 
                     1 -> {
-                        sec--
+                        if (min>-1) {
+                            sec--
+                            score()
+                        }
                         if (sec < 0 && min > 0) {
                             sec = 59
                             min--
+
                         } else if (sec == 0 && min == 0) {
                             finish()
+                        }
+                        if(min == 10 && sec == 0){
+                            Bukkit.broadcastMessage("${ChatColor.YELLOW}試合終了まであと${ChatColor.RED}$min${ChatColor.YELLOW}分")
+                            for (all in Bukkit.getOnlinePlayers()) {
+                                all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.1f, 1f)
+                            }
+                        }else if(min == 5 && sec == 0){
+                            Bukkit.broadcastMessage("${ChatColor.YELLOW}試合終了まであと${ChatColor.RED}$min${ChatColor.YELLOW}分")
+                            for (all in Bukkit.getOnlinePlayers()) {
+                                all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.1f, 1f)
+                            }
+                        }else if(min == 3 && sec == 0){
+                            Bukkit.broadcastMessage("${ChatColor.YELLOW}試合終了まであと${ChatColor.RED}$min${ChatColor.YELLOW}分")
+                            for (all in Bukkit.getOnlinePlayers()) {
+                                all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.1f, 1f)
+                            }
+                        }else if(min == 2 && sec == 0){
+                            Bukkit.broadcastMessage("${ChatColor.YELLOW}試合終了まであと${ChatColor.RED}$min${ChatColor.YELLOW}分")
+                            for (all in Bukkit.getOnlinePlayers()) {
+                                all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.1f, 1f)
+                            }
+                        }else if(min == 1 && sec == 0){
+                            Bukkit.broadcastMessage("${ChatColor.YELLOW}試合終了まであと${ChatColor.RED}$min${ChatColor.YELLOW}分")
+                            for (all in Bukkit.getOnlinePlayers()) {
+                                all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.1f, 1f)
+                            }
+                        }else if(min == 0 && sec == 30){
+                            Bukkit.broadcastMessage("${ChatColor.YELLOW}試合終了まであと${ChatColor.RED}$sec${ChatColor.YELLOW}秒")
+                            for (all in Bukkit.getOnlinePlayers()) {
+                                all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.1f, 1f)
+                            }
+                        }else if(min == 0 && sec == 10){
+                            Bukkit.broadcastMessage("${ChatColor.YELLOW}試合終了まであと${ChatColor.RED}$sec${ChatColor.YELLOW}秒")
+                            for (all in Bukkit.getOnlinePlayers()) {
+                                all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.1f, 1f)
+                            }
+                        }else if(min == 0 && sec == 5){
+                            Bukkit.broadcastMessage("${ChatColor.YELLOW}試合終了まであと${ChatColor.RED}$sec${ChatColor.YELLOW}秒")
+                            for (all in Bukkit.getOnlinePlayers()) {
+                                all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.1f, 1f)
+                            }
+                        }else if(min == 0 && sec == 4){
+                            Bukkit.broadcastMessage("${ChatColor.YELLOW}試合終了まであと${ChatColor.RED}$sec${ChatColor.YELLOW}秒")
+                            for (all in Bukkit.getOnlinePlayers()) {
+                                all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.1f, 1f)
+                            }
+                        }else if(min == 0 && sec == 3){
+                            Bukkit.broadcastMessage("${ChatColor.YELLOW}試合終了まであと${ChatColor.RED}$sec${ChatColor.YELLOW}秒")
+                            for (all in Bukkit.getOnlinePlayers()) {
+                                all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.1f, 1f)
+                            }
+                        }else if(min == 0 && sec == 2){
+                            Bukkit.broadcastMessage("${ChatColor.YELLOW}試合終了まであと${ChatColor.RED}$sec${ChatColor.YELLOW}秒")
+                            for (all in Bukkit.getOnlinePlayers()) {
+                                all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.1f, 1f)
+                            }
+                        }else if(min == 0 && sec == 1){
+                            Bukkit.broadcastMessage("${ChatColor.YELLOW}試合終了まであと${ChatColor.RED}$sec${ChatColor.YELLOW}秒")
+                            for (all in Bukkit.getOnlinePlayers()) {
+                                all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.1f, 1f)
+                            }
                         }
                         for (player in Bukkit.getOnlinePlayers()) {
                             val team: Team? = Bukkit.getScoreboardManager()?.mainScoreboard?.getEntryTeam(player.name)
@@ -157,6 +243,11 @@ class Mining : JavaPlugin() , CommandExecutor {
                                 }
 
                             }
+
+
+
+
+
                         }
                     }
                 }
@@ -174,16 +265,34 @@ class Mining : JavaPlugin() , CommandExecutor {
                     "${ChatColor.GOLD}Mining Battle"
                 )
                 mscoreboard?.displaySlot = DisplaySlot.SIDEBAR
-                mscoreboard?.getScore("$min : $sec")?.score = 15
-                mscoreboard?.getScore("")?.score = 14
-                mscoreboard?.getScore(ChatColor.GOLD.toString() + "${ChatColor.RED}Red : " + redscore)?.score =
-                    13
-                mscoreboard?.getScore(ChatColor.GOLD.toString() + "${ChatColor.BLUE}Blue : " + bluescore)?.score =
+                mscoreboard?.getScore("${ChatColor.GOLD}  残り時間")?.score = 3
+                if (sec in 0..9) {
+                    mscoreboard?.getScore("${ChatColor.YELLOW}               $min : 0$sec")?.score = 2
+                }else{
+                    mscoreboard?.getScore("${ChatColor.YELLOW}               $min : $sec")?.score = 2
+                }
+
+                mscoreboard?.getScore(ChatColor.GOLD.toString() + "${ChatColor.RED}  レッド ${ChatColor.GRAY} >   ${ChatColor.YELLOW}" + redscore)?.score =
                     12
-                mscoreboard?.getScore("")?.score =
+                mscoreboard?.getScore(ChatColor.GOLD.toString() + "${ChatColor.BLUE}  ブルー ${ChatColor.GRAY} >   ${ChatColor.YELLOW}" + bluescore)?.score =
                     11
+                mscoreboard?.getScore(ChatColor.GOLD.toString() + "")?.score = 15
+                mscoreboard?.getScore(ChatColor.GOLD.toString() + " ")?.score = 13
+                mscoreboard?.getScore(ChatColor.GOLD.toString() + "  ")?.score = 9
+                mscoreboard?.getScore(ChatColor.GOLD.toString() + "   ")?.score = 1
+                if (min>9&&sec in 10..59){
+                    mscoreboard?.getScore("  ${ChatColor.YELLOW}無敵時間終了まで  ${ChatColor.GREEN}"+(min-10)+":"+sec)?.score = 14
+                }else if(min>9&&sec in 0..9) {
+                    mscoreboard?.getScore("  ${ChatColor.YELLOW}無敵時間終了まで  ${ChatColor.GREEN}" + (min - 10)+":0" + sec)?.score =
+                        14
+                }else if (min>4&&sec in 10..59){
+                    mscoreboard?.getScore("  ${ChatColor.YELLOW}ポイント2倍まで  ${ChatColor.GREEN}"+(min-5)+":"+sec)?.score = 14
+                }else if (min>4&&sec in 0..9){
+                    mscoreboard?.getScore("  ${ChatColor.YELLOW}ポイント2倍まで  ${ChatColor.GREEN}"+(min-5)+":0"+sec)?.score = 14
+                }
                 redscore = vals.redscore
                 bluescore = vals.bluescore
+
             }
         }.runTaskTimer(this, 0, 1)
     }
@@ -216,7 +325,8 @@ class Mining : JavaPlugin() , CommandExecutor {
         pscoreboard?.getScore(ChatColor.GOLD.toString() + "サーバー人数: " + allplayer)?.score = 0
 
         tick()
-        prepare()
+        //prepare()
+
         return
     }
 
@@ -280,10 +390,12 @@ class Mining : JavaPlugin() , CommandExecutor {
             }
 
             "quick-start" -> {
+
                 Bukkit.broadcastMessage("${ChatColor.GOLD}試合開始")
                 for (all in Bukkit.getOnlinePlayers()) {
+                    all.inventory.clear(8)
                     all.playSound(all.location, Sound.ENTITY_WITHER_SPAWN, 1f, 1f)
-                    all.teleport(Location(all.location.world, 0.0, 150.0, 0.0))
+                    all.teleport(Location(all.location.world, 0.0, 256.0, 0.0))
                     val helmet = ItemStack(Material.ELYTRA)
                     all.inventory.chestplate = helmet
                     all.inventory.setItem(0, ItemStack(Material.WOODEN_SWORD, 1))
@@ -293,8 +405,8 @@ class Mining : JavaPlugin() , CommandExecutor {
                     all.inventory.setItem(4, ItemStack(Material.BREAD, 10))
                     all.gameMode = GameMode.SURVIVAL
                     score = mutableMapOf(all.uniqueId to 0)
-                    min = 0
-                    sec = 10
+                    min = 15
+                    sec = 0
                 }
                 gamestart = 1
                 vals.gamestart = gamestart
@@ -302,6 +414,11 @@ class Mining : JavaPlugin() , CommandExecutor {
                 gametick()
 
 
+            }
+            "set-time"->{
+                if(sender.isOp){
+                    min = args[0].toInt()
+                }
             }
         }
         return false
@@ -342,31 +459,50 @@ class Mining : JavaPlugin() , CommandExecutor {
     }
 
     fun finish() {
+        for (all in Bukkit.getOnlinePlayers()) {
+            all.playSound(all.location, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 0.3f, 1f)
+            all.playSound(all.location, Sound.ENTITY_GENERIC_EXPLODE, 0.1f, 1f)
+        }
         Bukkit.broadcastMessage("${ChatColor.GOLD}試合終了")
+        if (redscore>bluescore) {
+            Bukkit.broadcastMessage("${ChatColor.GOLD}------------------")
+            Bukkit.broadcastMessage("${ChatColor.RED}   レッド${ChatColor.GRAY} > ${ChatColor.YELLOW}$redscore")
+            Bukkit.broadcastMessage("${ChatColor.BLUE}   ブルー${ChatColor.GRAY} > ${ChatColor.YELLOW}$bluescore")
+            Bukkit.broadcastMessage("${ChatColor.GOLD}  よって${ChatColor.RED}赤${ChatColor.GOLD}の勝ちです")
+            Bukkit.broadcastMessage("${ChatColor.GOLD}------------------")
+        } else if (redscore<bluescore){
+            Bukkit.broadcastMessage("${ChatColor.GOLD}------------------")
+            Bukkit.broadcastMessage("${ChatColor.RED}   レッド${ChatColor.GRAY} > ${ChatColor.YELLOW}$redscore")
+            Bukkit.broadcastMessage("${ChatColor.BLUE}   ブルー${ChatColor.GRAY} > ${ChatColor.YELLOW}$bluescore")
+            Bukkit.broadcastMessage("${ChatColor.GOLD}  よって${ChatColor.BLUE}青${ChatColor.GOLD}の勝ちです")
+            Bukkit.broadcastMessage("${ChatColor.GOLD}------------------")
+        } else if (redscore==bluescore){
+            Bukkit.broadcastMessage("${ChatColor.GOLD}------------------")
+            Bukkit.broadcastMessage("${ChatColor.RED}   レッド${ChatColor.GRAY} > ${ChatColor.YELLOW}$redscore")
+            Bukkit.broadcastMessage("${ChatColor.BLUE}   ブルー${ChatColor.GRAY} > ${ChatColor.YELLOW}$bluescore")
+            Bukkit.broadcastMessage("${ChatColor.GOLD}  よって${ChatColor.LIGHT_PURPLE}引き分け${ChatColor.GOLD}です")
+            Bukkit.broadcastMessage("${ChatColor.GOLD}------------------")
+        }
+
+
+
+
+
+
         val ranking: MutableMap<Int?, String> = TreeMap { m: Int?, n: Int? ->
             m!!.compareTo(
-                n!!
+               n!!
             ) * -1
         }
 
         for (name in score.keys) {
             ranking[score[name]] = name.toString()
-            Bukkit.broadcastMessage("name: $name")
-            Bukkit.broadcastMessage("ranking score name :"+ ranking[score[name]])
-            playername = Bukkit.getPlayer(name)?.name.toString()
-            Bukkit.broadcastMessage("a   $playername")
         }
         for (player in Bukkit.getOnlinePlayers()) {
             var i = 1
             for (nKey in ranking.keys) {
-                Bukkit.broadcastMessage("ranking nkey: " +ranking.keys)
-                Bukkit.broadcastMessage("nkey: $nKey")
-                val playername1 = Bukkit.getPlayer(ranking[nKey].toString())?.name
-                val playername2 = Bukkit.getPlayer(playername1.toString())
-                Bukkit.broadcastMessage("${ChatColor.GREEN}"+ranking[nKey].toString())
-                Bukkit.broadcastMessage("${ChatColor.GOLD}"+playername1)
-                Bukkit.broadcastMessage("${ChatColor.RED}"+playername2?.name)
-               player.sendMessage(ChatColor.YELLOW.toString() + i + ". " + ChatColor.AQUA + playername1 + playername + ChatColor.WHITE + "(" + nKey + ")")
+                val playername = Bukkit.getPlayer(UUID.fromString(ranking[nKey]))?.name
+                player.sendMessage(ChatColor.YELLOW.toString() + i + ". " + ChatColor.AQUA + playername + ChatColor.WHITE + "(" + nKey + ")")
                 i += 1
             }
         }
@@ -395,4 +531,37 @@ class Mining : JavaPlugin() , CommandExecutor {
             }
         }
     }
+
+    companion object {
+        fun autoitem(player: Player) {
+
+                player.teleport(Location(player.location.world, 0.0, 450.0, 0.0))
+                val helmet = ItemStack(Material.ELYTRA)
+                player.inventory.chestplate = helmet
+                player.inventory.setItem(0, ItemStack(Material.WOODEN_SWORD, 1))
+                player.inventory.setItem(1, ItemStack(Material.WOODEN_PICKAXE, 1))
+                player.inventory.setItem(2, ItemStack(Material.WOODEN_AXE, 1))
+                player.inventory.setItem(3, ItemStack(Material.WOODEN_SHOVEL, 1))
+                player.inventory.setItem(4, ItemStack(Material.BREAD, 10))
+                player.gameMode = GameMode.SURVIVAL
+
+        }
+    }
+    fun score(){
+
+        if (min==10&&sec==0){
+            Bukkit.broadcastMessage("${ChatColor.GOLD} 無敵時間が終了しました。")
+            truedamage = false
+            for (all in Bukkit.getOnlinePlayers()){
+                all.playSound(all.location, Sound.ENTITY_WITHER_AMBIENT,0.25f,2.0f)
+            }
+        }else if (min==5&&sec==0){
+            Bukkit.broadcastMessage("${ChatColor.GOLD} ポイントが2倍になりました。")
+            pointdouble = true
+            for (all in Bukkit.getOnlinePlayers()){
+                all.playSound(all.location, Sound.ENTITY_WITHER_AMBIENT,0.25f,2.0f)
+            }
+        }
+    }
+
 }

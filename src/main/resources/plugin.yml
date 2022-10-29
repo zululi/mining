@@ -22,3 +22,6 @@ commands:
 
   quick-start:
       description: quick start
+
+  set-time:
+    description: time set
