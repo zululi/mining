@@ -13,37 +13,61 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.entity.EntityDamageEvent
+import org.bukkit.event.entity.EntityDropItemEvent
 import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.AsyncPlayerChatEvent
+import org.bukkit.event.player.PlayerDropItemEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.ItemMeta
+
+
+
+
+
+
 
 
 object listener : Listener {
     var redscore = Mining.vals.redscore
     var bluescore = Mining.vals.bluescore
+
+    @EventHandler
+    fun item(e: PlayerDropItemEvent){
+        val player = e.player
+
+            val item = e.itemDrop
+            player.sendMessage("lore : "+item.itemStack.itemMeta?.lore.toString())
+        player.sendMessage("lore2 : "+item.itemStack.type)
+            when (item.itemStack.itemMeta?.lore.toString()) {
+                "[${ChatColor.GOLD}SoulBound]"->{
+                    e.isCancelled = true
+                    when (item.name){
+                        "Wooden Sword"->{
+                            Bukkit.broadcastMessage("aaaaaa")
+                            player.inventory.remove(item.itemStack)
+
+                        }
+                    }
+
+                }
+            }
+
+    }
     @EventHandler
     fun move(e: PlayerMoveEvent) {
         val player = e.player
         if (player.gameMode == GameMode.SURVIVAL) {
             val material = player.location.add(0.0, -1.0, 0.0).block.type.toString()
-            player.sendMessage(material)
             if (material!="WHITE_STAINED_GLASS"){
-                if (material!="AIR") {
-                    if (material!="VOID_AIR") {
-
-                        val helmet = ItemStack(Material.ELYTRA)
-                        val metadata2 = helmet.itemMeta
-                        metadata2?.isUnbreakable = true
-                        helmet.itemMeta = metadata2
-                        player.inventory.remove(ItemStack(Material.ELYTRA))
-                        player.inventory.removeItem(ItemStack(Material.ELYTRA,1))
-
-                       // val helmet = ItemStack(Material.AIR)
-                        //player.inventory.chestplate = helmet
-                        player.sendMessage("${ChatColor.RED}clear")
+                if (material != "AIR"){
+                    val chestplatecheck = player.inventory.chestplate?.type.toString()
+                    if (chestplatecheck=="ELYTRA"){
+                        val helmet = ItemStack(Material.AIR)
+                        player.inventory.chestplate = helmet
                     }
+
                 }
             }
         }
@@ -104,7 +128,6 @@ object listener : Listener {
         Mining.vals.bluescore = bluescore
 
     }
-
 
     @EventHandler
     fun onChatEvent(e: AsyncPlayerChatEvent) {

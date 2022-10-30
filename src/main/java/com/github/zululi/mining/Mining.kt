@@ -1,10 +1,10 @@
 package com.github.zululi.mining
 
 import com.github.zululi.mining.Mining.vals.min
+import com.github.zululi.mining.Mining.vals.pointdouble
 import com.github.zululi.mining.Mining.vals.score
 import com.github.zululi.mining.Mining.vals.sec
 import com.github.zululi.mining.Mining.vals.truedamage
-import com.github.zululi.mining.Mining.vals.pointdouble
 import com.github.zululi.mining.listener.listener
 import org.bukkit.*
 import org.bukkit.attribute.Attribute
@@ -12,10 +12,8 @@ import org.bukkit.block.Block
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
-import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scoreboard.DisplaySlot
@@ -129,16 +127,58 @@ class Mining : JavaPlugin() , CommandExecutor {
                                     helmet.itemMeta = metadata
                                     all.inventory.chestplate = helmet
 
+                                    val woodensword = ItemStack(Material.WOODEN_SWORD)
+                                    val metadatasword = woodensword.itemMeta
+                                    metadatasword?.isUnbreakable = true
+                                    val l0: MutableList<String> = ArrayList()
+                                    l0.add("${ChatColor.GOLD}SoulBound")
+                                    metadatasword?.lore = (l0)
+                                    woodensword.itemMeta = metadatasword
+                                    all.inventory.setItem(0,woodensword)
+
+                                    val woodenpickaxe = ItemStack(Material.WOODEN_PICKAXE)
+                                    val metadatapickaxe = woodenpickaxe.itemMeta
+                                    metadatapickaxe?.isUnbreakable = true
+                                    val l1: MutableList<String> = ArrayList()
+                                    l1.add("${ChatColor.GOLD}SoulBound")
+                                    metadatapickaxe?.lore = (l1)
+                                    woodenpickaxe.itemMeta = metadatapickaxe
+                                    all.inventory.setItem(1,woodenpickaxe)
+                                    
+                                    val woodenaxe = ItemStack(Material.WOODEN_AXE)
+                                    val metadataaxe = woodenaxe.itemMeta
+                                    metadataaxe?.isUnbreakable = true
+                                    val l2: MutableList<String> = ArrayList()
+                                    l2.add("${ChatColor.GOLD}SoulBound")
+                                    metadataaxe?.lore = (l2)
+                                    woodenaxe.itemMeta = metadataaxe
+                                    all.inventory.setItem(2,woodenaxe)
+
+                                    
+                                    val woodenshovel = ItemStack(Material.WOODEN_SHOVEL)
+                                    val metadatashovel = woodenshovel.itemMeta
+                                    metadatashovel?.isUnbreakable = true
+                                    val l3: MutableList<String> = ArrayList()
+                                    l3.add("${ChatColor.GOLD}SoulBound")
+                                    metadatashovel?.lore = (l3)
+                                    woodenshovel.itemMeta = metadatashovel
+                                    all.inventory.setItem(3,woodenshovel)
+
+                                    val bread = ItemStack(Material.BREAD)
+                                    val metadatabread = bread.itemMeta
+                                    metadatabread?.isUnbreakable = true
+                                    val l4: MutableList<String> = ArrayList()
+                                    l4.add("${ChatColor.GOLD}SoulBound")
+                                    metadatabread?.lore = (l4)
+                                    bread.itemMeta = metadatabread
+                                    all.inventory.setItem(4,bread)
 
 
 
 
 
-                                    all.inventory.setItem(0, ItemStack(Material.WOODEN_SWORD, 1))
-                                    all.inventory.setItem(1, ItemStack(Material.WOODEN_PICKAXE, 1))
-                                    all.inventory.setItem(2, ItemStack(Material.WOODEN_AXE, 1))
-                                    all.inventory.setItem(3, ItemStack(Material.WOODEN_SHOVEL, 1))
-                                    all.inventory.setItem(4, ItemStack(Material.BREAD, 10))
+
+                                    //all.inventory.setItem(0, ItemStack(Material.WOODEN_SWORD, 1))
                                     all.gameMode = GameMode.SURVIVAL
                                     score = mutableMapOf(all.uniqueId to 0)
                                     min = 15
@@ -294,7 +334,7 @@ class Mining : JavaPlugin() , CommandExecutor {
                 bluescore = vals.bluescore
 
             }
-        }.runTaskTimer(this, 0, 1)
+        }.runTaskTimer(this, 0, 0)
     }
 
 
@@ -343,36 +383,42 @@ class Mining : JavaPlugin() , CommandExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         when (command.name) {
             "start" -> {
-                startsec = 10
-                val world = Bukkit.getWorld("world")
-                val b: Block = world!!.getBlockAt(5, 149, 6)
-                val block = Material.getMaterial("AIR")!!.createBlockData()
-                b.blockData = block
+                if (sender.isOp) {
+                    startsec = 10
+                    val world = Bukkit.getWorld("world")
+                    val b: Block = world!!.getBlockAt(5, 149, 6)
+                    val block = Material.getMaterial("AIR")!!.createBlockData()
+                    b.blockData = block
+                }
             }
 
             "team-auto-warifuri" -> {
-                if (args.isEmpty()) {
-                    sender.sendMessage("${ChatColor.GREEN}自動で割り振りをしました。")
-                    autowarifuri()
+                if (sender.isOp) {
+                    if (args.isEmpty()) {
+                        sender.sendMessage("${ChatColor.GREEN}自動で割り振りをしました。")
+                        autowarifuri()
 
 
-                } else {
-                    sender.sendMessage("${ChatColor.RED}コマンドが不完全です。")
+                    } else {
+                        sender.sendMessage("${ChatColor.RED}コマンドが不完全です。")
+                    }
                 }
-
             }
 
             "team-red-warifuri" -> {
-                if (args.isEmpty()) {
-                    sender.sendMessage("${ChatColor.RED}プレイヤーを入力してください")
-                } else {
-                    val player = args[0]
-                    red?.addEntry(player)
-                    sender.sendMessage("${args[0]}を赤チームにしました")
+                if (sender.isOp) {
+                    if (args.isEmpty()) {
+                        sender.sendMessage("${ChatColor.RED}プレイヤーを入力してください")
+                    } else {
+                        val player = args[0]
+                        red?.addEntry(player)
+                        sender.sendMessage("${args[0]}を赤チームにしました")
+                    }
                 }
             }
 
             "team-blue-warifuri" -> {
+                if (sender.isOp) {
                 if (args.isEmpty()) {
                     sender.sendMessage("${ChatColor.RED}プレイヤーを入力してください")
                 } else {
@@ -380,44 +426,46 @@ class Mining : JavaPlugin() , CommandExecutor {
                     blue?.addEntry(player)
                     sender.sendMessage("${args[0]}を青チームにしました")
                 }
+                }
             }
 
             "team-empty" -> {
-
-                removeentry()
-                sender.sendMessage("${ChatColor.GREEN}全員をチームから外しました。")
-
+                if (sender.isOp) {
+                    removeentry()
+                    sender.sendMessage("${ChatColor.GREEN}全員をチームから外しました。")
+                }
             }
 
             "quick-start" -> {
+                if (sender.isOp) {
+                    Bukkit.broadcastMessage("${ChatColor.GOLD}試合開始")
+                    for (all in Bukkit.getOnlinePlayers()) {
+                        all.playSound(all.location, Sound.ENTITY_WITHER_SPAWN, 1f, 1f)
+                        all.teleport(Location(all.location.world, 0.0, 256.0, 0.0))
+                        val helmet = ItemStack(Material.ELYTRA)
+                        all.inventory.chestplate = helmet
+                        all.inventory.setItem(0, ItemStack(Material.WOODEN_SWORD, 1))
+                        all.inventory.setItem(1, ItemStack(Material.WOODEN_PICKAXE, 1))
+                        all.inventory.setItem(2, ItemStack(Material.WOODEN_AXE, 1))
+                        all.inventory.setItem(3, ItemStack(Material.WOODEN_SHOVEL, 1))
+                        all.inventory.setItem(4, ItemStack(Material.BREAD, 10))
+                        all.gameMode = GameMode.SURVIVAL
+                        score = mutableMapOf(all.uniqueId to 0)
+                        min = 15
+                        sec = 0
+                    }
+                    gamestart = 1
+                    vals.gamestart = gamestart
 
-                Bukkit.broadcastMessage("${ChatColor.GOLD}試合開始")
-                for (all in Bukkit.getOnlinePlayers()) {
-                    all.inventory.clear(8)
-                    all.playSound(all.location, Sound.ENTITY_WITHER_SPAWN, 1f, 1f)
-                    all.teleport(Location(all.location.world, 0.0, 256.0, 0.0))
-                    val helmet = ItemStack(Material.ELYTRA)
-                    all.inventory.chestplate = helmet
-                    all.inventory.setItem(0, ItemStack(Material.WOODEN_SWORD, 1))
-                    all.inventory.setItem(1, ItemStack(Material.WOODEN_PICKAXE, 1))
-                    all.inventory.setItem(2, ItemStack(Material.WOODEN_AXE, 1))
-                    all.inventory.setItem(3, ItemStack(Material.WOODEN_SHOVEL, 1))
-                    all.inventory.setItem(4, ItemStack(Material.BREAD, 10))
-                    all.gameMode = GameMode.SURVIVAL
-                    score = mutableMapOf(all.uniqueId to 0)
-                    min = 15
-                    sec = 0
+                    gametick()
                 }
-                gamestart = 1
-                vals.gamestart = gamestart
-
-                gametick()
-
 
             }
             "set-time"->{
-                if(sender.isOp){
-                    min = args[0].toInt()
+                if (sender.isOp) {
+                    if (sender.isOp) {
+                        min = args[0].toInt()
+                    }
                 }
             }
         }
