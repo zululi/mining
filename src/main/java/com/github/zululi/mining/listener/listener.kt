@@ -39,7 +39,7 @@ object listener : Listener {
 
             val item = e.itemDrop
             player.sendMessage("lore : "+item.itemStack.itemMeta?.lore.toString())
-        player.sendMessage("lore2 : "+item.itemStack.type)
+        player.sendMessage("lore2 : "+item.itemStack)
             when (item.itemStack.itemMeta?.lore.toString()) {
                 "[${ChatColor.GOLD}SoulBound]"->{
                     e.isCancelled = true
