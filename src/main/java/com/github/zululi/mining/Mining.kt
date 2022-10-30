@@ -5,6 +5,7 @@ import com.github.zululi.mining.Mining.vals.pointdouble
 import com.github.zululi.mining.Mining.vals.score
 import com.github.zululi.mining.Mining.vals.sec
 import com.github.zululi.mining.Mining.vals.truedamage
+import com.github.zululi.mining.Mining.vals.gamestart
 import com.github.zululi.mining.listener.listener
 import org.bukkit.*
 import org.bukkit.attribute.Attribute
@@ -47,26 +48,26 @@ class Mining : JavaPlugin() , CommandExecutor {
     private var blue = board?.registerNewTeam("blue")
 
 
-   // private fun prepare() {
-      //  object : BukkitRunnable() {
-        //    override fun run() {
-          //      if (x in -5..5 && z in -6..5) {
-           //         if (x in -5..4 && z == 5) {
-            //            x++
-            //            z = -6
-          //          }
-          //          z++
-          //      } else {
-          //          this.cancel()
-          //      }
-          //      Bukkit.getConsoleSender().sendMessage("x: $x z:$z")
-         //       val world = Bukkit.getWorld("world")
-         //       val b: Block = world!!.getBlockAt(x, 149, z)
-       //         val block = Material.getMaterial("WHITE_STAINED_GLASS")!!.createBlockData()
-       //         b.blockData = block
-      //      }
-    //    }.runTaskTimer(this, 0, 0)
-   // }
+    private fun prepare() {
+        object : BukkitRunnable() {
+            override fun run() {
+                if (x in -5..5 && z in -6..5) {
+                    if (x in -5..4 && z == 5) {
+                        x++
+                        z = -6
+                    }
+                    z++
+                } else {
+                    this.cancel()
+                }
+                Bukkit.getConsoleSender().sendMessage("x: $x z:$z")
+                val world = Bukkit.getWorld("world")
+                val b: Block = world!!.getBlockAt(x, 255, z)
+                val block = Material.getMaterial("WHITE_STAINED_GLASS")!!.createBlockData()
+                b.blockData = block
+            }
+        }.runTaskTimer(this, 0, 0)
+    }
 
     private fun tick() {
         object : BukkitRunnable() {
@@ -76,7 +77,8 @@ class Mining : JavaPlugin() , CommandExecutor {
                     player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = 40.0
                     player.getAttribute(Attribute.GENERIC_ATTACK_SPEED)?.baseValue = 99999.0
                     val world: World = player.world
-                    world.setSpawnLocation(0,400,0)
+                    world.setSpawnLocation(0,256,0)
+
 
 
 
@@ -92,12 +94,15 @@ class Mining : JavaPlugin() , CommandExecutor {
                         val pscoreboard = Bukkit.getScoreboardManager()?.mainScoreboard?.registerNewObjective(
                             "player",
                             "Dummy",
-                            "${ChatColor.GOLD}Mining Battle"
+                            " ${ChatColor.GOLD}Mining Battle ${ChatColor.GRAY}1.0 "
                         )
                         pscoreboard?.displaySlot = DisplaySlot.SIDEBAR
-                        pscoreboard?.getScore(ChatColor.GOLD.toString() + "サーバー人数: " + allplayer)?.score = 0
+                        pscoreboard?.getScore(ChatColor.GOLD.toString() + " サーバー人数: " + allplayer)?.score = 0
                         for (player in Bukkit.getOnlinePlayers()) {
                             player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE)?.baseValue = -5.0
+                            val world = player.world
+                            world.time = 6000;
+                            player.health = (40.0)
                         }
 
 
@@ -117,6 +122,8 @@ class Mining : JavaPlugin() , CommandExecutor {
                             } else if (startsec == 0) {
                                 Bukkit.broadcastMessage("${ChatColor.GOLD}試合開始")
                                 for (all in Bukkit.getOnlinePlayers()) {
+                                    all.health = (40.0)
+                                    all.saturation = (20.0F)
                                     all.playSound(all.location, Sound.ENTITY_WITHER_SPAWN, 1f, 1f)
                                     all.teleport(Location(all.location.world, 0.0, 256.0, 0.0))
 
@@ -164,21 +171,8 @@ class Mining : JavaPlugin() , CommandExecutor {
                                     woodenshovel.itemMeta = metadatashovel
                                     all.inventory.setItem(3,woodenshovel)
 
-                                    val bread = ItemStack(Material.BREAD)
-                                    val metadatabread = bread.itemMeta
-                                    metadatabread?.isUnbreakable = true
-                                    val l4: MutableList<String> = ArrayList()
-                                    l4.add("${ChatColor.GOLD}SoulBound")
-                                    metadatabread?.lore = (l4)
-                                    bread.itemMeta = metadatabread
-                                    all.inventory.setItem(4,bread)
+                                    all.inventory.setItem(4,ItemStack(Material.BREAD,10))
 
-
-
-
-
-
-                                    //all.inventory.setItem(0, ItemStack(Material.WOODEN_SWORD, 1))
                                     all.gameMode = GameMode.SURVIVAL
                                     score = mutableMapOf(all.uniqueId to 0)
                                     min = 15
@@ -196,7 +190,7 @@ class Mining : JavaPlugin() , CommandExecutor {
                     }
 
                     1 -> {
-                        if (min>-1) {
+                        if (min > -1) {
                             sec--
                             score()
                         }
@@ -207,8 +201,16 @@ class Mining : JavaPlugin() , CommandExecutor {
                         } else if (sec == 0 && min == 0) {
                             finish()
                         }
-                        if(min == 10 && sec == 0){
+                        if (min == 15 && sec in 1..5){
+                            for (all in Bukkit.getOnlinePlayers()) {
+                                all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.1f, 1f)
+                            }
+                        }else if(min == 10 && sec == 0) {
                             Bukkit.broadcastMessage("${ChatColor.YELLOW}試合終了まであと${ChatColor.RED}$min${ChatColor.YELLOW}分")
+                            for (all in Bukkit.getOnlinePlayers()) {
+                                all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.1f, 1f)
+                            }
+                        }else if (min == 5&& sec in 1..5){
                             for (all in Bukkit.getOnlinePlayers()) {
                                 all.playSound(all.location, Sound.UI_BUTTON_CLICK, 0.1f, 1f)
                             }
@@ -302,7 +304,7 @@ class Mining : JavaPlugin() , CommandExecutor {
                 val mscoreboard = Bukkit.getScoreboardManager()?.mainScoreboard?.registerNewObjective(
                     "main",
                     "Dummy",
-                    "${ChatColor.GOLD}Mining Battle"
+                    " ${ChatColor.GOLD}Mining Battle ${ChatColor.GRAY}1.0 "
                 )
                 mscoreboard?.displaySlot = DisplaySlot.SIDEBAR
                 mscoreboard?.getScore("${ChatColor.GOLD}  残り時間")?.score = 3
@@ -365,7 +367,7 @@ class Mining : JavaPlugin() , CommandExecutor {
         pscoreboard?.getScore(ChatColor.GOLD.toString() + "サーバー人数: " + allplayer)?.score = 0
 
         tick()
-        //prepare()
+        prepare()
 
         return
     }
@@ -384,9 +386,12 @@ class Mining : JavaPlugin() , CommandExecutor {
         when (command.name) {
             "start" -> {
                 if (sender.isOp) {
+                    for (player in Bukkit.getOnlinePlayers()) {
+                        player.inventory.clear()
+                    }
                     startsec = 10
                     val world = Bukkit.getWorld("world")
-                    val b: Block = world!!.getBlockAt(5, 149, 6)
+                    val b: Block = world!!.getBlockAt(5, 255, 6)
                     val block = Material.getMaterial("AIR")!!.createBlockData()
                     b.blockData = block
                 }
@@ -438,8 +443,10 @@ class Mining : JavaPlugin() , CommandExecutor {
 
             "quick-start" -> {
                 if (sender.isOp) {
+
                     Bukkit.broadcastMessage("${ChatColor.GOLD}試合開始")
                     for (all in Bukkit.getOnlinePlayers()) {
+                        all.inventory.clear()
                         all.playSound(all.location, Sound.ENTITY_WITHER_SPAWN, 1f, 1f)
                         all.teleport(Location(all.location.world, 0.0, 256.0, 0.0))
                         val helmet = ItemStack(Material.ELYTRA)
@@ -507,11 +514,18 @@ class Mining : JavaPlugin() , CommandExecutor {
     }
 
     fun finish() {
+        gamestart = 2
+        vals.gamestart = gamestart
         for (all in Bukkit.getOnlinePlayers()) {
             all.playSound(all.location, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 0.3f, 1f)
             all.playSound(all.location, Sound.ENTITY_GENERIC_EXPLODE, 0.1f, 1f)
+            all.health = (40.0)
+            all.saturation = (20.0F)
+            truedamage = true
+            all.gameMode = GameMode.CREATIVE
         }
         Bukkit.broadcastMessage("${ChatColor.GOLD}試合終了")
+
         if (redscore>bluescore) {
             Bukkit.broadcastMessage("${ChatColor.GOLD}------------------")
             Bukkit.broadcastMessage("${ChatColor.RED}   レッド${ChatColor.GRAY} > ${ChatColor.YELLOW}$redscore")
@@ -557,7 +571,7 @@ class Mining : JavaPlugin() , CommandExecutor {
 
 
 
-        gamestart = 2
+
 
 
     }
@@ -580,21 +594,7 @@ class Mining : JavaPlugin() , CommandExecutor {
         }
     }
 
-    companion object {
-        fun autoitem(player: Player) {
 
-                player.teleport(Location(player.location.world, 0.0, 450.0, 0.0))
-                val helmet = ItemStack(Material.ELYTRA)
-                player.inventory.chestplate = helmet
-                player.inventory.setItem(0, ItemStack(Material.WOODEN_SWORD, 1))
-                player.inventory.setItem(1, ItemStack(Material.WOODEN_PICKAXE, 1))
-                player.inventory.setItem(2, ItemStack(Material.WOODEN_AXE, 1))
-                player.inventory.setItem(3, ItemStack(Material.WOODEN_SHOVEL, 1))
-                player.inventory.setItem(4, ItemStack(Material.BREAD, 10))
-                player.gameMode = GameMode.SURVIVAL
-
-        }
-    }
     fun score(){
 
         if (min==10&&sec==0){

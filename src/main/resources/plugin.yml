@@ -1,5 +1,5 @@
 name: Mining
-version: '${project.version}'
+version: 1.0
 main: com.github.zululi.mining.Mining
 api-version: 1.19
 author: zululi
