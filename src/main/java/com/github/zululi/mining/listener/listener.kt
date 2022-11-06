@@ -256,7 +256,7 @@ object listener : Listener {
                     val teams = tscoreboard?.getPlayerTeam(player)
                     if (teams != null) {
                         if (teams == tscoreboard.getTeam("red")) {
-                            when (block.toString()) {
+                            when (block) {
                                 "COAL_ORE" -> {
 
 
@@ -518,7 +518,7 @@ object listener : Listener {
                             }
 
                         } else if (teams == tscoreboard.getTeam("blue")) {
-                            when (block.toString()) {
+                            when (block) {
                                 "COAL_ORE" -> {
 
 
