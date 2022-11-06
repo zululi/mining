@@ -5,17 +5,19 @@ import com.github.zululi.mining.Mining.vals.pointdouble
 import com.github.zululi.mining.Mining.vals.score
 import com.github.zululi.mining.Mining.vals.sec
 import com.github.zululi.mining.Mining.vals.truedamage
-import com.github.zululi.mining.Mining.vals.gamestart
 import com.github.zululi.mining.listener.listener
 import org.bukkit.*
 import org.bukkit.attribute.Attribute
+import org.bukkit.attribute.AttributeModifier
 import org.bukkit.block.Block
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
-import org.bukkit.entity.Player
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.Team
@@ -47,6 +49,46 @@ class Mining : JavaPlugin() , CommandExecutor {
     private var red = board?.registerNewTeam("red")
     private var blue = board?.registerNewTeam("blue")
 
+    override fun onEnable() {
+        // Plugin startup logic
+        Bukkit.getConsoleSender().sendMessage("plugin loaded")
+        server.pluginManager.registerEvents(listener, this)
+        val allplayer = Bukkit.getOnlinePlayers().size
+        Bukkit.getScoreboardManager()?.mainScoreboard?.getObjective("player")?.unregister()
+        val pscoreboard = Bukkit.getScoreboardManager()?.mainScoreboard?.registerNewObjective(
+            "player",
+            "Dummy",
+            "${ChatColor.GOLD}Mining Battle"
+        )
+
+        red?.setAllowFriendlyFire(false)
+        blue?.setAllowFriendlyFire(false)
+        red?.color = ChatColor.RED
+        blue?.color = ChatColor.BLUE
+        red?.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER)
+        blue?.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER)
+        red?.prefix = "${ChatColor.RED}[R] "
+        blue?.prefix = "${ChatColor.BLUE}[B] "
+
+
+
+        pscoreboard?.displaySlot = DisplaySlot.SIDEBAR
+        pscoreboard?.getScore(ChatColor.GOLD.toString() + "サーバー人数: " + allplayer)?.score = 0
+
+        tick()
+        prepare()
+
+    }
+
+    override fun onDisable() {
+        gamestart = 0
+        Bukkit.getScoreboardManager()?.mainScoreboard?.getObjective("player")?.unregister()
+        Bukkit.getScoreboardManager()?.mainScoreboard?.getObjective("main")?.unregister()
+        red?.unregister()
+        blue?.unregister()
+    }
+
+
 
     private fun prepare() {
         object : BukkitRunnable() {
@@ -74,13 +116,15 @@ class Mining : JavaPlugin() , CommandExecutor {
             override fun run() {
                 //always
                 for (player in Bukkit.getOnlinePlayers()) {
-                    player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = 40.0
-                    player.getAttribute(Attribute.GENERIC_ATTACK_SPEED)?.baseValue = 99999.0
+                    player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = 20.0
+                    player.getAttribute(Attribute.GENERIC_ATTACK_SPEED)?.baseValue = 99.0
                     val world: World = player.world
                     world.setSpawnLocation(0,256,0)
-
-
-
+                    world.difficulty = Difficulty.EASY
+                    world.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true)
+                    world.setGameRule(GameRule.SPAWN_RADIUS, 0)
+                    world.setGameRule(GameRule.DO_WEATHER_CYCLE, false)
+                    world.setGameRule(GameRule.DO_INSOMNIA, false)
 
                 }
 
@@ -94,7 +138,7 @@ class Mining : JavaPlugin() , CommandExecutor {
                         val pscoreboard = Bukkit.getScoreboardManager()?.mainScoreboard?.registerNewObjective(
                             "player",
                             "Dummy",
-                            " ${ChatColor.GOLD}Mining Battle ${ChatColor.GRAY}1.0 "
+                            " ${ChatColor.GOLD}Mining Battle ${ChatColor.GRAY}1.1 "
                         )
                         pscoreboard?.displaySlot = DisplaySlot.SIDEBAR
                         pscoreboard?.getScore(ChatColor.GOLD.toString() + " サーバー人数: " + allplayer)?.score = 0
@@ -102,7 +146,7 @@ class Mining : JavaPlugin() , CommandExecutor {
                             player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE)?.baseValue = -5.0
                             val world = player.world
                             world.time = 6000;
-                            player.health = (40.0)
+                            player.health = (20.0)
                         }
 
 
@@ -122,10 +166,11 @@ class Mining : JavaPlugin() , CommandExecutor {
                             } else if (startsec == 0) {
                                 Bukkit.broadcastMessage("${ChatColor.GOLD}試合開始")
                                 for (all in Bukkit.getOnlinePlayers()) {
-                                    all.health = (40.0)
+                                    all.health = (20.0)
                                     all.saturation = (20.0F)
                                     all.playSound(all.location, Sound.ENTITY_WITHER_SPAWN, 1f, 1f)
                                     all.teleport(Location(all.location.world, 0.0, 256.0, 0.0))
+                                    all.addPotionEffect(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 1200, 6))
 
 
                                     val helmet = ItemStack(Material.ELYTRA)
@@ -154,6 +199,14 @@ class Mining : JavaPlugin() , CommandExecutor {
                                     
                                     val woodenaxe = ItemStack(Material.WOODEN_AXE)
                                     val metadataaxe = woodenaxe.itemMeta
+                                    val modifier = AttributeModifier(
+                                        UUID.randomUUID(),
+                                        "generic.attackDamage",
+                                        2.0,
+                                        AttributeModifier.Operation.ADD_NUMBER,
+                                        EquipmentSlot.HAND
+                                    )
+                                    metadataaxe?.addAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE, modifier)
                                     metadataaxe?.isUnbreakable = true
                                     val l2: MutableList<String> = ArrayList()
                                     l2.add("${ChatColor.GOLD}SoulBound")
@@ -179,9 +232,10 @@ class Mining : JavaPlugin() , CommandExecutor {
                                     sec = 0
                                 }
                                 gamestart = 1
-                                vals.gamestart = gamestart
-
+                                Mining.vals.gamestart = 1
                                 gametick()
+
+
 
 
                             }
@@ -280,8 +334,128 @@ class Mining : JavaPlugin() , CommandExecutor {
                             if (team == null) {
                                 if (tscoreboard?.getTeam("blue")?.size!! >= tscoreboard.getTeam("red")?.size!!) {
                                     red?.addEntry(player.name)
+                                    val world = player.location.world
+                                    player.teleport(Location(world, 0.0, 256.0, 0.0))
+                                    player.inventory.clear()
+
+
+
+
+                                    player.addPotionEffect(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 1200, 6))
+                                    val helmet = ItemStack(Material.ELYTRA)
+                                    val metadata = helmet.itemMeta
+                                    metadata?.isUnbreakable = true
+                                    helmet.itemMeta = metadata
+                                    player.inventory.chestplate = helmet
+
+                                    val woodensword = ItemStack(Material.WOODEN_SWORD)
+                                    val metadatasword = woodensword.itemMeta
+                                    metadatasword?.isUnbreakable = true
+                                    val l01: MutableList<String> = ArrayList()
+                                    l01.add("${ChatColor.GOLD}SoulBound")
+                                    metadatasword?.lore = (l01)
+                                    woodensword.itemMeta = metadatasword
+                                    player.inventory.setItem(0,woodensword)
+
+                                    val woodenpickaxe = ItemStack(Material.WOODEN_PICKAXE)
+                                    val metadatapickaxe = woodenpickaxe.itemMeta
+                                    metadatapickaxe?.isUnbreakable = true
+                                    val l11: MutableList<String> = ArrayList()
+                                    l11.add("${ChatColor.GOLD}SoulBound")
+                                    metadatapickaxe?.lore = (l11)
+                                    woodenpickaxe.itemMeta = metadatapickaxe
+                                    player.inventory.setItem(1,woodenpickaxe)
+
+                                    val woodenaxe = ItemStack(Material.WOODEN_AXE)
+                                    val metadataaxe = woodenaxe.itemMeta
+                                    metadataaxe?.isUnbreakable = true
+                                    val modifier = AttributeModifier(
+                                        UUID.randomUUID(),
+                                        "generic.attackDamage",
+                                        2.0,
+                                        AttributeModifier.Operation.ADD_NUMBER,
+                                        EquipmentSlot.HAND
+                                    )
+                                    metadataaxe?.addAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE, modifier)
+                                    val l21: MutableList<String> = ArrayList()
+                                    l21.add("${ChatColor.GOLD}SoulBound")
+                                    metadataaxe?.lore = (l21)
+                                    woodenaxe.itemMeta = metadataaxe
+                                    player.inventory.setItem(2,woodenaxe)
+
+
+                                    val woodenshovel = ItemStack(Material.WOODEN_SHOVEL)
+                                    val metadatashovel = woodenshovel.itemMeta
+                                    metadatashovel?.isUnbreakable = true
+                                    val l31: MutableList<String> = ArrayList()
+                                    l31.add("${ChatColor.GOLD}SoulBound")
+                                    metadatashovel?.lore = (l31)
+                                    woodenshovel.itemMeta = metadatashovel
+                                    player.inventory.setItem(3,woodenshovel)
+
+
+                                    player.inventory.setItem(4,ItemStack(Material.BREAD,10))
                                 } else {
                                     blue?.addEntry(player.name)
+                                    val world = player.location.world
+                                    player.teleport(Location(world, 0.0, 256.0, 0.0))
+                                    player.inventory.clear()
+
+
+                                    player.addPotionEffect(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 1200, 6))
+                                    val helmet = ItemStack(Material.ELYTRA)
+                                    val metadata = helmet.itemMeta
+                                    metadata?.isUnbreakable = true
+                                    helmet.itemMeta = metadata
+                                    player.inventory.chestplate = helmet
+
+                                    val woodensword = ItemStack(Material.WOODEN_SWORD)
+                                    val metadatasword = woodensword.itemMeta
+                                    metadatasword?.isUnbreakable = true
+                                    val l01: MutableList<String> = ArrayList()
+                                    l01.add("${ChatColor.GOLD}SoulBound")
+                                    metadatasword?.lore = (l01)
+                                    woodensword.itemMeta = metadatasword
+                                    player.inventory.setItem(0,woodensword)
+
+                                    val woodenpickaxe = ItemStack(Material.WOODEN_PICKAXE)
+                                    val metadatapickaxe = woodenpickaxe.itemMeta
+                                    metadatapickaxe?.isUnbreakable = true
+                                    val l11: MutableList<String> = ArrayList()
+                                    l11.add("${ChatColor.GOLD}SoulBound")
+                                    metadatapickaxe?.lore = (l11)
+                                    woodenpickaxe.itemMeta = metadatapickaxe
+                                    player.inventory.setItem(1,woodenpickaxe)
+
+                                    val woodenaxe = ItemStack(Material.WOODEN_AXE)
+                                    val metadataaxe = woodenaxe.itemMeta
+                                    metadataaxe?.isUnbreakable = true
+                                    val modifier = AttributeModifier(
+                                        UUID.randomUUID(),
+                                        "generic.attackDamage",
+                                        2.0,
+                                        AttributeModifier.Operation.ADD_NUMBER,
+                                        EquipmentSlot.HAND
+                                    )
+                                    metadataaxe?.addAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE, modifier)
+                                    val l21: MutableList<String> = ArrayList()
+                                    l21.add("${ChatColor.GOLD}SoulBound")
+                                    metadataaxe?.lore = (l21)
+                                    woodenaxe.itemMeta = metadataaxe
+                                    player.inventory.setItem(2,woodenaxe)
+
+
+                                    val woodenshovel = ItemStack(Material.WOODEN_SHOVEL)
+                                    val metadatashovel = woodenshovel.itemMeta
+                                    metadatashovel?.isUnbreakable = true
+                                    val l31: MutableList<String> = ArrayList()
+                                    l31.add("${ChatColor.GOLD}SoulBound")
+                                    metadatashovel?.lore = (l31)
+                                    woodenshovel.itemMeta = metadatashovel
+                                    player.inventory.setItem(3,woodenshovel)
+
+
+                                    player.inventory.setItem(4,ItemStack(Material.BREAD,10))
                                 }
 
                             }
@@ -304,7 +478,7 @@ class Mining : JavaPlugin() , CommandExecutor {
                 val mscoreboard = Bukkit.getScoreboardManager()?.mainScoreboard?.registerNewObjective(
                     "main",
                     "Dummy",
-                    " ${ChatColor.GOLD}Mining Battle ${ChatColor.GRAY}1.0 "
+                    " ${ChatColor.GOLD}Mining Battle ${ChatColor.GRAY}1.1 "
                 )
                 mscoreboard?.displaySlot = DisplaySlot.SIDEBAR
                 mscoreboard?.getScore("${ChatColor.GOLD}  残り時間")?.score = 3
@@ -336,50 +510,14 @@ class Mining : JavaPlugin() , CommandExecutor {
                 bluescore = vals.bluescore
 
             }
-        }.runTaskTimer(this, 0, 0)
+        }.runTaskTimer(this, 0, 5)
     }
 
 
-    override fun onEnable() {
-        // Plugin startup logic
-        Bukkit.getConsoleSender().sendMessage("plugin loaded")
-        server.pluginManager.registerEvents(listener, this)
-        val allplayer = Bukkit.getOnlinePlayers().size
-        Bukkit.getScoreboardManager()?.mainScoreboard?.getObjective("player")?.unregister()
-        val pscoreboard = Bukkit.getScoreboardManager()?.mainScoreboard?.registerNewObjective(
-            "player",
-            "Dummy",
-            "${ChatColor.GOLD}Mining Battle"
-        )
-
-        red?.setAllowFriendlyFire(false)
-        blue?.setAllowFriendlyFire(false)
-        red?.color = ChatColor.RED
-        blue?.color = ChatColor.BLUE
-        red?.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER)
-        blue?.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER)
-        red?.prefix = "${ChatColor.RED}[R] "
-        blue?.prefix = "${ChatColor.BLUE}[B] "
 
 
 
-        pscoreboard?.displaySlot = DisplaySlot.SIDEBAR
-        pscoreboard?.getScore(ChatColor.GOLD.toString() + "サーバー人数: " + allplayer)?.score = 0
 
-        tick()
-        prepare()
-
-        return
-    }
-
-
-    override fun onDisable() {
-        gamestart = 0
-        Bukkit.getScoreboardManager()?.mainScoreboard?.getObjective("player")?.unregister()
-        Bukkit.getScoreboardManager()?.mainScoreboard?.getObjective("main")?.unregister()
-        red?.unregister()
-        blue?.unregister()
-    }
 
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
@@ -472,6 +610,7 @@ class Mining : JavaPlugin() , CommandExecutor {
                 if (sender.isOp) {
                     if (sender.isOp) {
                         min = args[0].toInt()
+                        sec = args[1].toInt()
                     }
                 }
             }
@@ -519,7 +658,7 @@ class Mining : JavaPlugin() , CommandExecutor {
         for (all in Bukkit.getOnlinePlayers()) {
             all.playSound(all.location, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 0.3f, 1f)
             all.playSound(all.location, Sound.ENTITY_GENERIC_EXPLODE, 0.1f, 1f)
-            all.health = (40.0)
+            all.health = (20.0)
             all.saturation = (20.0F)
             truedamage = true
             all.gameMode = GameMode.CREATIVE

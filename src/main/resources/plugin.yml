@@ -1,5 +1,5 @@
 name: Mining
-version: 1.0
+version: 1.1
 main: com.github.zululi.mining.Mining
 api-version: 1.19
 author: zululi

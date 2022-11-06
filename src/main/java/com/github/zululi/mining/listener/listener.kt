@@ -8,24 +8,30 @@ import com.github.zululi.mining.Mining.vals.truedamage
 import net.md_5.bungee.api.ChatMessageType
 import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.*
+import org.bukkit.attribute.Attribute
+import org.bukkit.attribute.AttributeModifier
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.AsyncPlayerChatEvent
 import org.bukkit.event.player.PlayerDropItemEvent
+import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerMoveEvent
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
-import org.bukkit.scheduler.BukkitRunnable
-import java.util.ArrayList
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
+import java.util.*
 
 
 object listener : Listener {
-    var redscore = Mining.vals.redscore
-    var bluescore = Mining.vals.bluescore
+    private var redscore = Mining.vals.redscore
+    private var bluescore = Mining.vals.bluescore
 
     @EventHandler
     fun item(e: PlayerDropItemEvent){
@@ -79,6 +85,7 @@ object listener : Listener {
         }
     }
 
+
     @EventHandler
     fun damage(e: EntityDamageEvent) {
         val entity = e.entity
@@ -104,7 +111,8 @@ object listener : Listener {
         redscore = Mining.vals.redscore
         bluescore = Mining.vals.bluescore
         val player = e.entity
-        player.teleport(Location(player.location.world, 0.0, 256.0, 0.0))
+        val world = player.location.world
+        player.teleport(Location(world, 0.0, 256.0, 0.0))
         player.inventory.clear()
 
 
@@ -138,6 +146,14 @@ object listener : Listener {
         val woodenaxe = ItemStack(Material.WOODEN_AXE)
         val metadataaxe = woodenaxe.itemMeta
         metadataaxe?.isUnbreakable = true
+        val modifier = AttributeModifier(
+            UUID.randomUUID(),
+            "generic.attackDamage",
+            2.0,
+            AttributeModifier.Operation.ADD_NUMBER,
+            EquipmentSlot.HAND
+        )
+        metadataaxe?.addAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE, modifier)
         val l21: MutableList<String> = ArrayList()
         l21.add("${ChatColor.GOLD}SoulBound")
         metadataaxe?.lore = (l21)
@@ -158,6 +174,7 @@ object listener : Listener {
         player.inventory.setItem(4,ItemStack(Material.BREAD,10))
 
 
+
         val uuid = player.uniqueId
         e.keepInventory = false
         //e.drops.clear()
@@ -166,16 +183,14 @@ object listener : Listener {
         if (teams != null) {
             if (teams == tscoreboard.getTeam("red")) {
                 //red team everyone
-                player.sendMessage("${ChatColor.RED}-100 points")
-                val addpoint = -100
+                val addpoint = -1000
                 score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
-                redscore -= 100
+                redscore -= 1000
 
             } else if (teams == tscoreboard.getTeam("blue")) {
                 //blue team everyone
-                player.sendMessage("${ChatColor.RED}-100 points")
-                bluescore -= 100
-                val addpoint = -100
+                bluescore -= 1000
+                val addpoint = -1000
                 score.put(uuid, score[uuid]?.plus(addpoint) ?: 0)
 
             } else {
@@ -185,6 +200,7 @@ object listener : Listener {
         e.keepInventory = true
         Mining.vals.redscore = redscore
         Mining.vals.bluescore = bluescore
+        player.addPotionEffect(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 1200, 6))
 
     }
 
@@ -218,6 +234,7 @@ object listener : Listener {
 
 
             event.isCancelled = true
+            gamestart = Mining.vals.gamestart
             when (gamestart) {
                 0 -> {
                 }
@@ -246,7 +263,7 @@ object listener : Listener {
                                     redscore += 5
                                     var addpoint = 5
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore<bluescore) {
                                         addpoint *= 2
                                         redscore += 5
                                     }
@@ -263,7 +280,7 @@ object listener : Listener {
                                     redscore += 10
                                     var addpoint = 10
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore<bluescore) {
                                         addpoint *= 2
                                         redscore += 10
                                     }
@@ -279,7 +296,7 @@ object listener : Listener {
 
                                     var addpoint = 7
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore<bluescore) {
                                         addpoint *= 2
                                         redscore += 7
                                     }
@@ -295,7 +312,7 @@ object listener : Listener {
                                     redscore += 15
                                     var addpoint = 15
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore<bluescore) {
                                         addpoint *= 2
                                         redscore += 15
                                     }
@@ -311,7 +328,7 @@ object listener : Listener {
                                     redscore += 10
                                     var addpoint = 10
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore<bluescore) {
                                         addpoint *= 2
                                         redscore += 10
                                     }
@@ -327,7 +344,7 @@ object listener : Listener {
                                     redscore += 15
                                     var addpoint = 15
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore<bluescore) {
                                         addpoint *= 2
                                         redscore += 15
                                     }
@@ -343,7 +360,7 @@ object listener : Listener {
                                     redscore += 25
                                     var addpoint = 25
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore<bluescore) {
                                         addpoint *= 2
                                         redscore += 25
                                     }
@@ -359,7 +376,7 @@ object listener : Listener {
                                     redscore += 30
                                     var addpoint = 30
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore<bluescore) {
                                         addpoint *= 2
                                         redscore += 30
                                     }
@@ -375,7 +392,7 @@ object listener : Listener {
                                     redscore += 20
                                     var addpoint = 20
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore<bluescore) {
                                         addpoint *= 2
                                         redscore += 20
                                     }
@@ -391,7 +408,7 @@ object listener : Listener {
                                     redscore += 25
                                     var addpoint = 25
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore<bluescore) {
                                         addpoint *= 2
                                         redscore += 25
                                     }
@@ -407,7 +424,7 @@ object listener : Listener {
                                     redscore += 50
                                     var addpoint = 50
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore<bluescore) {
                                         addpoint *= 2
                                         redscore += 50
                                     }
@@ -423,7 +440,7 @@ object listener : Listener {
                                     redscore += 75
                                     var addpoint = 75
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore<bluescore) {
                                         addpoint *= 2
                                         redscore += 75
                                     }
@@ -439,7 +456,7 @@ object listener : Listener {
                                     redscore += 30
                                     var addpoint = 30
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore<bluescore) {
                                         addpoint *= 2
                                         redscore += 30
                                     }
@@ -456,7 +473,7 @@ object listener : Listener {
                                     var addpoint = 35
                                     redscore += 35
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore<bluescore) {
                                         addpoint *= 2
                                     }
                                     val component = TextComponent()
@@ -471,7 +488,7 @@ object listener : Listener {
                                     redscore += 100
                                     var addpoint = 100
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore<bluescore) {
                                         redscore += 100
                                         addpoint *= 2
                                     }
@@ -487,7 +504,7 @@ object listener : Listener {
                                     redscore += 125
                                     var addpoint = 125
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore<bluescore) {
                                         redscore += 125
                                         addpoint *= 2
                                     }
@@ -508,7 +525,7 @@ object listener : Listener {
                                     bluescore += 5
                                     var addpoint = 5
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore>bluescore) {
                                         bluescore += 5
                                         addpoint *= 2
                                     }
@@ -525,7 +542,7 @@ object listener : Listener {
                                     bluescore += 10
                                     var addpoint = 10
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore>bluescore) {
                                         bluescore += 10
                                         addpoint *= 2
                                     }
@@ -541,7 +558,7 @@ object listener : Listener {
                                     bluescore += 7
                                     var addpoint = 7
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore>bluescore) {
                                         bluescore += 7
                                         addpoint *= 2
                                     }
@@ -557,7 +574,7 @@ object listener : Listener {
                                     bluescore += 15
                                     var addpoint = 15
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore>bluescore) {
                                         bluescore += 15
                                         addpoint *= 2
                                     }
@@ -573,7 +590,7 @@ object listener : Listener {
                                     bluescore += 10
                                     var addpoint = 10
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore>bluescore) {
                                         bluescore += 10
                                         addpoint *= 2
                                     }
@@ -589,7 +606,7 @@ object listener : Listener {
                                     bluescore += 15
                                     var addpoint = 15
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore>bluescore) {
                                         bluescore += 15
                                         addpoint *= 2
                                     }
@@ -605,7 +622,7 @@ object listener : Listener {
                                     bluescore += 25
                                     var addpoint = 25
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore>bluescore) {
                                         bluescore += 25
                                         addpoint *= 2
                                     }
@@ -621,7 +638,7 @@ object listener : Listener {
                                     bluescore += 30
                                     var addpoint = 30
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore>bluescore) {
                                         bluescore += 30
                                         addpoint *= 2
                                     }
@@ -637,7 +654,7 @@ object listener : Listener {
                                     bluescore += 20
                                     var addpoint = 20
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore>bluescore) {
                                         bluescore += 20
                                         addpoint *= 2
                                     }
@@ -653,7 +670,7 @@ object listener : Listener {
                                     bluescore += 25
                                     var addpoint = 25
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore>bluescore) {
                                         bluescore += 25
                                         addpoint *= 2
                                     }
@@ -669,7 +686,7 @@ object listener : Listener {
                                     bluescore += 50
                                     var addpoint = 50
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore>bluescore) {
                                         bluescore += 50
                                         addpoint *= 2
                                     }
@@ -685,7 +702,7 @@ object listener : Listener {
                                     bluescore += 75
                                     var addpoint = 75
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore>bluescore) {
                                         bluescore += 75
                                         addpoint *= 2
                                     }
@@ -701,7 +718,7 @@ object listener : Listener {
                                     bluescore += 30
                                     var addpoint = 30
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore>bluescore) {
                                         bluescore += 30
                                         addpoint *= 2
                                     }
@@ -717,7 +734,7 @@ object listener : Listener {
                                     bluescore += 35
                                     var addpoint = 35
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore>bluescore) {
                                         bluescore += 35
                                         addpoint *= 2
                                     }
@@ -733,7 +750,7 @@ object listener : Listener {
                                     bluescore += 100
                                     var addpoint = 100
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore>bluescore) {
                                         bluescore += 100
                                         addpoint *= 2
                                     }
@@ -749,7 +766,7 @@ object listener : Listener {
                                     bluescore += 125
                                     var addpoint = 125
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
-                                    if (pointdouble) {
+                                    if (pointdouble&&redscore>bluescore) {
                                         bluescore += 125
                                         addpoint *= 2
                                     }
@@ -776,4 +793,27 @@ object listener : Listener {
             Mining.vals.bluescore = bluescore
         }
     }
-}
+    @EventHandler
+    fun onplaceblock(event:BlockPlaceEvent) {
+        val player = event.player
+        when (gamestart){
+            0 -> {
+                if (player.gameMode == GameMode.SURVIVAL) {
+                    event.isCancelled = true
+                    player.sendMessage("${ChatColor.RED}今はブロックを置くことができません。")
+                    player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.0f)
+                }
+
+            }
+        }
+    }
+
+
+    @EventHandler
+    fun onPlayerInteractEvent(event: PlayerInteractEvent){
+        val item = event.player.itemInHand.type
+        val player = event.player
+        player.sendMessage(""+item)
+        }
+    }
+
